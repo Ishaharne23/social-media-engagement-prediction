@@ -1,0 +1,38 @@
+{
+  "Support Vector Machine": {
+    "Accuracy": 0.561,
+    "Precision": 0.548832450432597,
+    "Recall": 0.5612272996367942,
+    "F1_Score": 0.5532329839538487,
+    "ROC_AUC": 0.8254779191772688,
+    "CV_Mean_Accuracy": 0.5586,
+    "CV_Std": 0.013455110553243301
+  },
+  "Decision Tree": {
+    "Accuracy": 0.577,
+    "Precision": 0.5759652243831348,
+    "Recall": 0.5771956831309302,
+    "F1_Score": 0.5743395482868034,
+    "ROC_AUC": 0.825386569540092,
+    "CV_Mean_Accuracy": 0.5868,
+    "CV_Std": 0.02195814199790139
+  },
+  "Naive Bayes": {
+    "Accuracy": 0.507,
+    "Precision": 0.49650025639147316,
+    "Recall": 0.5066782828525256,
+    "F1_Score": 0.4805291659362021,
+    "ROC_AUC": 0.7794105040894921,
+    "CV_Mean_Accuracy": 0.5114,
+    "CV_Std": 0.012354756169184411
+  },
+  "Random Forest": {
+    "Accuracy": 0.603,
+    "Precision": 0.6092971661925737,
+    "Recall": 0.6029920158722539,
+    "F1_Score": 0.6005844463498875,
+    "ROC_AUC": 0.8568115883215475,
+    "CV_Mean_Accuracy": 0.6166,
+    "CV_Std": 0.015067846561469903
+  }
+}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Engagement Level Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141c; --surface:#1a1d29; --surface2:#20drop; --line:#2b2f40;
+    --text:#eef0f5; --muted:#8b90a3;
+    --accent:#2dd4bf;
+    --low:#64748b; --medium:#f2a33f; --high:#fb7185; --viral:#a855f7;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px; margin:0 auto; padding:32px 20px 56px;}
+  header{margin-bottom:28px;}
+  .eyebrow{color:var(--accent); font-size:13px; letter-spacing:.02em; margin:0 0 6px;}
+  h1{font-family:'Space Grotesk',sans-serif; font-size:clamp(24px,4vw,34px); margin:0 0 8px; font-weight:700;}
+  .sub{color:var(--muted); font-size:14.5px; max-width:62ch; line-height:1.5; margin:0;}
+
+  .grid{display:grid; grid-template-columns: 1.1fr 0.9fr; gap:22px;}
+  @media (max-width:820px){ .grid{grid-template-columns:1fr;} }
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px;}
+  .card h2{font-size:14px; text-transform:none; margin:0 0 16px; color:var(--text); font-weight:600;}
+
+  .field{margin-bottom:14px;}
+  label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
+  select, input[type=range], input[type=number]{
+    width:100%; background:#141724; border:1px solid var(--line); color:var(--text);
+    border-radius:8px; padding:9px 10px; font-size:14px; font-family:inherit;
+  }
+  select:focus, input:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .rangeval{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:4px;}
+  .toggles{display:flex; gap:18px; margin-top:2px;}
+  .toggle{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text);}
+  .toggle input{width:16px;height:16px;accent-color:var(--accent);}
+
+  .result-label{font-family:'Space Grotesk',sans-serif; font-size:38px; font-weight:700; margin:2px 0 2px;}
+  .result-sub{color:var(--muted); font-size:13px; margin-bottom:18px;}
+  .pill{display:inline-block; padding:4px 12px; border-radius:999px; font-size:12.5px; font-weight:600; margin-bottom:14px;}
+
+  .bar-row{display:grid; grid-template-columns:64px 1fr 42px; align-items:center; gap:10px; margin-bottom:10px; font-size:12.5px;}
+  .bar-track{height:9px; background:#141724; border-radius:6px; overflow:hidden; border:1px solid var(--line);}
+  .bar-fill{height:100%; border-radius:6px; transition:width .35s ease;}
+
+  .drivers{margin-top:18px; padding-top:16px; border-top:1px solid var(--line);}
+  .drivers h3{font-size:12.5px; color:var(--muted); font-weight:600; margin:0 0 10px; text-transform:none;}
+  .driver{display:flex; justify-content:space-between; font-size:13px; padding:5px 0; color:var(--text);}
+  .driver span:last-child{color:var(--muted);}
+
+  footer{margin-top:26px; color:var(--muted); font-size:12px; line-height:1.6;}
+  footer a{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Social Media Post Virality &amp; Engagement Prediction</p>
+    <h1>Engagement Level Predictor</h1>
+    <p class="sub">Set a post's structural attributes below. The estimator scores the combination against patterns learned from 5,000 historical posts and returns a predicted engagement tier.</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Post attributes</h2>
+
+      <div class="row2">
+        <div class="field">
+          <label for="platform">Platform</label>
+          <select id="platform"></select>
+        </div>
+        <div class="field">
+          <label for="contentType">Content type</label>
+          <select id="contentType"></select>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category"></select>
+        </div>
+        <div class="field">
+          <label for="sentiment">Caption sentiment</label>
+          <select id="sentiment"></select>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="tier">Account tier</label>
+          <select id="tier"></select>
+        </div>
+        <div class="field">
+          <label for="day">Day of week</label>
+          <select id="day"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="followers">Follower count: <span id="followersVal"></span></label>
+        <input type="range" id="followers" min="500" max="500000" step="500">
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="hashtags">Hashtag count: <span id="hashtagsVal"></span></label>
+          <input type="range" id="hashtags" min="0" max="30" step="1">
+        </div>
+        <div class="field">
+          <label for="hour">Post hour (0&ndash;23): <span id="hourVal"></span></label>
+          <input type="range" id="hour" min="0" max="23" step="1">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="length">Content length (characters): <span id="lengthVal"></span></label>
+        <input type="range" id="length" min="15" max="2000" step="5">
+      </div>
+
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="hasMedia" checked> Has media attached</label>
+        <label class="toggle"><input type="checkbox" id="isVerified"> Verified account</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Predicted engagement level</h2>
+      <span class="pill" id="pill">&nbsp;</span>
+      <div class="result-label" id="resultLabel">&mdash;</div>
+      <div class="result-sub" id="resultSub">Adjust the inputs to see a live prediction.</div>
+
+      <div id="bars"></div>
+
+      <div class="drivers">
+        <h3>Top contributing factors</h3>
+        <div id="driverList"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Estimator runs entirely in your browser: a weighted log-linear scoring rule fit to the empirical group
+    means and Random Forest feature-importance ranking from the underlying study (n = 5,000 posts).
+    It approximates the full scikit-learn pipeline (One-Hot Encoding + Standard Scaling + Random Forest /
+    SVM / Decision Tree / Naive Bayes) described in the project report, which in production would be
+    served from a Flask/FastAPI backend behind this same interface.
+  </footer>
+</div>
+
+<script>
+const LOOKUP = {
+  platform: {"Facebook":7.168,"Instagram":8.124,"LinkedIn":1.751,"TikTok":41.827,"Twitter":4.758,"YouTube":10.461},
+  content_type: {"Article":1.447,"Carousel":8.376,"Community Post":10.188,"Document":1.178,"Duet":41.63,"Live":7.409,"Photo":6.284,"Poll":3.283,"Post":7.709,"Reel":11.675,"Retweet":3.745,"Short":10.745,"Stitch":45.383,"Story":5.924,"Thread":4.834,"Tweet":6.305,"Video":20.408},
+  category: {"Business":11.965,"Education":11.89,"Entertainment":11.566,"Fashion":7.61,"Fitness":10.379,"Food":12.954,"Gaming":9.913,"Health":9.324,"Lifestyle":19.128,"Sports":9.536,"Technology":13.961,"Travel":15.206},
+  sentiment: {"Negative":11.869,"Neutral":10.651,"Positive":12.901},
+  influencer_tier: {"Macro":3.451,"Micro":39.548,"Mid-tier":11.714,"Nano":242.023},
+  day_of_week: {"Friday":19.119,"Monday":13.115,"Saturday":12.153,"Sunday":9.422,"Thursday":9.821,"Tuesday":11.411,"Wednesday":8.739},
+  global_mean: 11.96,
+  quartiles: [0.05, 1.03, 2.30, 6.245, 3510.46]
+};
+const WEIGHTS = { platform:0.15, content_type:0.10, category:0.05, sentiment:0.03, influencer_tier:0.15,
+                   day_of_week:0.07, hour:0.07, follower:0.20, hashtag:0.08, length:0.10 };
+const COLORS = { Low:'var(--low)', Medium:'var(--medium)', High:'var(--high)', Viral:'var(--viral)' };
+const LEVELS = ['Low','Medium','High','Viral'];
+
+function fillSelect(id, obj){
+  const el = document.getElementById(id);
+  Object.keys(obj).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; el.appendChild(o); });
+}
+fillSelect('platform', LOOKUP.platform);
+fillSelect('contentType', LOOKUP.content_type);
+fillSelect('category', LOOKUP.category);
+fillSelect('sentiment', LOOKUP.sentiment);
+fillSelect('tier', LOOKUP.influencer_tier);
+fillSelect('day', LOOKUP.day_of_week);
+
+document.getElementById('tier').value = 'Micro';
+document.getElementById('platform').value = 'Instagram';
+document.getElementById('followers').value = 120000;
+document.getElementById('hashtags').value = 12;
+document.getElementById('hour').value = 18;
+document.getElementById('length').value = 400;
+
+function followerFactor(f){
+  // empirical: engagement rate falls as follower count rises (rate = interactions / followers)
+  if(f < 125000) return 38.192/11.96;
+  if(f < 249000) return 4.842/11.96;
+  if(f < 375000) return 2.697/11.96;
+  return 2.11/11.96;
+}
+function hashtagFactor(h){
+  if(h <= 7) return 11.49/11.96;
+  if(h <= 15) return 14.621/11.96;
+  if(h <= 22) return 9.175/11.96;
+  return 12.555/11.96;
+}
+function lengthFactor(l){
+  if(l <= 280) return 14.679/11.96;
+  if(l <= 549) return 20.199/11.96;
+  if(l <= 1226) return 7.234/11.96;
+  return 5.689/11.96;
+}
+function hourFactor(h){
+  if(h<=5) return 11.198/11.96;
+  if(h<=11) return 14.454/11.96;
+  if(h<=17) return 10.023/11.96;
+  return 12.25/11.96;
+}
+
+function predict(){
+  const platform = document.getElementById('platform').value;
+  const contentType = document.getElementById('contentType').value;
+  const category = document.getElementById('category').value;
+  const sentiment = document.getElementById('sentiment').value;
+  const tier = document.getElementById('tier').value;
+  const day = document.getElementById('day').value;
+  const followers = +document.getElementById('followers').value;
+  const hashtags = +document.getElementById('hashtags').value;
+  const hour = +document.getElementById('hour').value;
+  const length = +document.getElementById('length').value;
+  const hasMedia = document.getElementById('hasMedia').checked;
+  const isVerified = document.getElementById('isVerified').checked;
+
+  document.getElementById('followersVal').textContent = followers.toLocaleString();
+  document.getElementById('hashtagsVal').textContent = hashtags;
+  document.getElementById('hourVal').textContent = hour + ':00';
+  document.getElementById('lengthVal').textContent = length;
+
+  const factors = {
+    platform: LOOKUP.platform[platform]/LOOKUP.global_mean,
+    content_type: LOOKUP.content_type[contentType]/LOOKUP.global_mean,
+    category: LOOKUP.category[category]/LOOKUP.global_mean,
+    sentiment: LOOKUP.sentiment[sentiment]/LOOKUP.global_mean,
+    influencer_tier: LOOKUP.influencer_tier[tier]/LOOKUP.global_mean,
+    day_of_week: LOOKUP.day_of_week[day]/LOOKUP.global_mean,
+    hour: hourFactor(hour),
+    follower: followerFactor(followers),
+    hashtag: hashtagFactor(hashtags),
+    length: lengthFactor(length),
+  };
+  let mediaBonus = hasMedia ? 1.05 : 0.92;
+  let verifiedBonus = isVerified ? 1.03 : 0.98;
+
+  let logScore = Math.log(LOOKUP.global_mean);
+  Object.keys(WEIGHTS).forEach(k=>{ logScore += WEIGHTS[k]*Math.log(factors[k]); });
+  logScore += Math.log(mediaBonus) + Math.log(verifiedBonus);
+  const predictedRate = Math.exp(logScore);
+
+  // classify against quartile cutpoints
+  const q = LOOKUP.quartiles;
+  let levelIdx;
+  if(predictedRate <= q[1]) levelIdx = 0;
+  else if(predictedRate <= q[2]) levelIdx = 1;
+  else if(predictedRate <= q[3]) levelIdx = 2;
+  else levelIdx = 3;
+
+  // soft distribution via log-distance to bin centers
+  const centers = [ (Math.log(q[0]+0.01)+Math.log(q[1]))/2, (Math.log(q[1])+Math.log(q[2]))/2,
+                     (Math.log(q[2])+Math.log(q[3]))/2, (Math.log(q[3])+Math.log(q[4]))/2 ];
+  const logPred = Math.log(predictedRate);
+  const dists = centers.map(c => -Math.abs(logPred-c)*1.4);
+  const maxD = Math.max(...dists);
+  const exps = dists.map(d=>Math.exp(d-maxD));
+  const sumE = exps.reduce((a,b)=>a+b,0);
+  const probs = exps.map(e=>e/sumE);
+
+  renderResult(levelIdx, probs, predictedRate, factors);
+}
+
+function renderResult(levelIdx, probs, predictedRate, factors){
+  const level = LEVELS[levelIdx];
+  const label = document.getElementById('resultLabel');
+  label.textContent = level;
+  label.style.color = COLORS[level];
+  document.getElementById('pill').textContent = 'Predicted tier';
+  document.getElementById('pill').style.background = 'rgba(45,212,191,0.12)';
+  document.getElementById('pill').style.color = 'var(--accent)';
+  document.getElementById('resultSub').textContent =
+    'Estimated engagement rate \u2248 ' + predictedRate.toFixed(2) + '% \u00b7 confidence ' + Math.round(probs[levelIdx]*100) + '%';
+
+  const barsEl = document.getElementById('bars');
+  barsEl.innerHTML = '';
+  LEVELS.forEach((lv,i)=>{
+    const pct = Math.round(probs[i]*100);
+    const row = document.createElement('div'); row.className='bar-row';
+    row.innerHTML = `<div>${lv}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${COLORS[lv]}"></div></div>
+      <div style="text-align:right; color:var(--muted)">${pct}%</div>`;
+    barsEl.appendChild(row);
+  });
+
+  const sorted = Object.entries(factors).sort((a,b)=>Math.abs(Math.log(b[1]))-Math.abs(Math.log(a[1]))).slice(0,4);
+  const niceNames = {platform:'Platform', content_type:'Content type', category:'Category', sentiment:'Sentiment',
+                      influencer_tier:'Account tier', day_of_week:'Day of week', hour:'Posting hour',
+                      follower:'Follower count', hashtag:'Hashtag count', length:'Content length'};
+  const dl = document.getElementById('driverList'); dl.innerHTML='';
+  sorted.forEach(([k,v])=>{
+    const dir = v>1 ? 'raises' : 'lowers';
+    const div = document.createElement('div'); div.className='driver';
+    div.innerHTML = `<span>${niceNames[k]}</span><span>${dir} score \u00d7${v.toFixed(2)}</span>`;
+    dl.appendChild(div);
+  });
+}
+
+['platform','contentType','category','sentiment','tier','day','followers','hashtags','hour','length','hasMedia','isVerified']
+  .forEach(id=> document.getElementById(id).addEventListener('input', predict));
+
+predict();
+</script>
+</body>
+</html>
